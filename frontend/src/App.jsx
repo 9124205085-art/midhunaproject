@@ -3,20 +3,23 @@ import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
-import ComingSoon from './pages/ComingSoon';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Assessment from './pages/student/Assessment';
+import ClassDetails from './pages/student/ClassDetails';
+import Classes from './pages/student/Classes';
 import Dashboard from './pages/student/Dashboard';
 import ModuleDetails from './pages/student/ModuleDetails';
+import MyClasses from './pages/student/MyClasses';
 import Profile from './pages/student/Profile';
+import Progress from './pages/student/Progress';
 import Recommendations from './pages/student/Recommendations';
 import SkillDetails from './pages/student/SkillDetails';
 import Skills from './pages/student/Skills';
 
 /**
- * Phase 1–6 active. Later phases use ComingSoon placeholders.
+ * Phase 1–8 active.
  */
 function App() {
   return (
@@ -63,7 +66,6 @@ function App() {
                 }
               />
 
-              {/* Phase 6 — Basic Skill Learning */}
               <Route
                 path="/student/skills"
                 element={
@@ -90,18 +92,35 @@ function App() {
               />
 
               <Route
-                path="/classes"
+                path="/student/classes"
                 element={
                   <ProtectedRoute role="student">
-                    <ComingSoon title="Weekend / Holiday Classes" phaseHint="Phase 7" />
+                    <Classes />
                   </ProtectedRoute>
                 }
               />
               <Route
+                path="/student/classes/my-registrations"
+                element={
+                  <ProtectedRoute role="student">
+                    <MyClasses />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/classes/:classId"
+                element={
+                  <ProtectedRoute role="student">
+                    <ClassDetails />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
                 path="/student/progress"
                 element={
                   <ProtectedRoute role="student">
-                    <ComingSoon title="My Progress" phaseHint="Phase 8" />
+                    <Progress />
                   </ProtectedRoute>
                 }
               />

@@ -8,7 +8,7 @@ import StatusCard from '../../components/StatusCard';
 import { getDashboard } from '../../services/studentService';
 
 /**
- * Phase 3 — Student Dashboard
+ * Phase 3 + Phase 8 dashboard
  */
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -47,6 +47,9 @@ export default function Dashboard() {
 
   const student = data?.student || {};
   const assessmentDone = !!student.assessmentCompleted;
+  const learning = data?.learningProgress;
+  const hasProgress = !!learning?.hasProgress;
+  const highlight = learning?.highlight;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -84,6 +87,39 @@ export default function Dashboard() {
         </div>
       </Card>
 
+      <Card className="mb-8 rounded-xl" title="My Learning Progress">
+        {hasProgress && highlight ? (
+          <>
+            <p className="text-lg font-bold text-stone-900">{highlight.skillName}</p>
+            <p className="mt-1 text-2xl font-extrabold text-teal-800">
+              {highlight.percentage}% Complete
+            </p>
+            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-stone-200">
+              <div
+                className="h-2 rounded-full bg-teal-700"
+                style={{ width: `${highlight.percentage}%` }}
+              />
+            </div>
+            <div className="mt-4">
+              <Link to="/student/progress">
+                <Button>View Progress</Button>
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-stone-600">
+              Start learning a skill to track your progress.
+            </p>
+            <div className="mt-4">
+              <Link to="/student/skills">
+                <Button>Explore Skills</Button>
+              </Link>
+            </div>
+          </>
+        )}
+      </Card>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatusCard
           title="Interest Assessment"
@@ -106,14 +142,18 @@ export default function Dashboard() {
           description="Find skill-development classes available during weekends and holidays."
           status={data.classStatus}
           statusTone={data.classStatus === 'Registered' ? 'success' : 'neutral'}
-          buttonLabel="View Classes"
-          to="/classes"
+          buttonLabel={data.classStatus === 'Registered' ? 'View My Classes' : 'View Classes'}
+          to={
+            data.classStatus === 'Registered'
+              ? '/student/classes/my-registrations'
+              : '/student/classes'
+          }
         />
         <StatusCard
           title="My Progress"
-          description="Track your learning and quiz performance."
+          description="Track your learning module completion."
           status={data.progressStatus}
-          statusTone="neutral"
+          statusTone={hasProgress ? 'success' : 'neutral'}
           buttonLabel="View Progress"
           to="/student/progress"
         />

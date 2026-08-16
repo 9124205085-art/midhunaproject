@@ -13,6 +13,7 @@ const courseRoutes = require('./routes/courseRoutes');
 const classRoutes = require('./routes/classRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const volunteerRoutes = require('./routes/volunteerRoutes');
+const progressRoutes = require('./routes/progressRoutes');
 
 connectDB();
 
@@ -29,7 +30,10 @@ app.get('/api/health', (req, res) => {
 app.use('/api/students', studentsRoutes);
 app.use('/api/auth', authRoutes);
 
-// Reserved for later phases
+// Phase 8 — Learning Progress
+app.use('/api/progress', progressRoutes);
+
+// Reserved / earlier phases
 app.use('/api/student', studentRoutes);
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/recommendations', recommendationRoutes);

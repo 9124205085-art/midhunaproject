@@ -1,15 +1,51 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
+import ErrorMessage from '../../components/ErrorMessage';
+import Loading from '../../components/Loading';
 import { getModuleById, getModuleIndex, getSkillById } from '../../data/skills';
+import { completeModule, getSkillProgress } from '../../services/progressService';
 
 /**
- * Phase 6 — Module learning content
- * No progress tracking / quiz (later phases).
+ * Phase 6 + Phase 8 — Module content with completion
  */
 export default function ModuleDetails() {
   const { skillId, moduleId } = useParams();
   const skill = getSkillById(skillId);
+  const [completed, setCompleted] = useState(false);
+  const [progress, setProgress] = useState(null);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  const module = skill ? getModuleById(skill, moduleId) : null;
+  const index = skill ? getModuleIndex(skill, moduleId) : -1;
+
+  useEffect(() => {
+    if (!skill || !module) {
+      setLoading(false);
+      return;
+    }
+    let active = true;
+    getSkillProgress(skill.id)
+      .then((res) => {
+        if (!active) return;
+        setProgress(res.data);
+        const item = (res.data.modules || []).find((m) => m.moduleId === module.id);
+        setCompleted(!!item?.completed);
+      })
+      .catch(() => {
+        if (active) setError('Unable to load your progress.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [skillId, moduleId]);
 
   if (!skill) {
     return (
@@ -24,9 +60,6 @@ export default function ModuleDetails() {
     );
   }
 
-  const module = getModuleById(skill, moduleId);
-  const index = getModuleIndex(skill, moduleId);
-
   if (!module || index < 0) {
     return (
       <div className="mx-auto max-w-lg px-4 py-12">
@@ -40,15 +73,47 @@ export default function ModuleDetails() {
     );
   }
 
+  if (loading) return <Loading text="Loading your progress..." />;
+
   const prev = index > 0 ? skill.modules[index - 1] : null;
   const next = index < skill.modules.length - 1 ? skill.modules[index + 1] : null;
-  const isLast = !next;
+  const allDone = progress?.percentage === 100;
+
+  const onComplete = async () => {
+    setError('');
+    setSuccess('');
+    setSubmitting(true);
+    try {
+      const res = await completeModule(skill.id, module.id);
+      setCompleted(true);
+      setProgress(res.data.detail);
+      setSuccess(
+        res.data.alreadyCompleted
+          ? 'Module already completed.'
+          : res.data.message || 'Module completed successfully!'
+      );
+    } catch (err) {
+      setError(err.response?.data?.message || 'Unable to update progress. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 overflow-x-hidden">
       <p className="text-sm font-semibold uppercase tracking-wide text-teal-800">{skill.name}</p>
       <p className="mt-1 text-sm text-stone-500">Module {index + 1}</p>
       <h1 className="mt-1 text-3xl font-bold text-stone-900">{module.title}</h1>
+      <p className={`mt-2 text-sm font-semibold ${completed ? 'text-teal-800' : 'text-stone-500'}`}>
+        {completed ? '✓ Completed' : '○ Not Completed'}
+      </p>
+
+      <ErrorMessage message={error} />
+      {success && (
+        <div className="mb-4 border border-teal-300 bg-teal-50 px-4 py-3 text-sm text-teal-900">
+          {success}
+        </div>
+      )}
 
       <Card className="mt-6 rounded-xl">
         <div className="whitespace-pre-line text-sm leading-relaxed text-stone-700">
@@ -62,9 +127,15 @@ export default function ModuleDetails() {
         </ul>
       </Card>
 
-      {isLast && (
+      <div className="mt-6">
+        <Button onClick={onComplete} disabled={completed || submitting}>
+          {submitting ? 'Updating progress...' : completed ? 'Completed' : 'Mark as Completed'}
+        </Button>
+      </div>
+
+      {completed && allDone && (
         <p className="mt-4 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
-          You have reached the end of this skill&apos;s basic modules.
+          Congratulations! You completed all learning modules for this skill.
         </p>
       )}
 
@@ -85,7 +156,11 @@ export default function ModuleDetails() {
 
         {next ? (
           <Link to={`/student/skills/${skill.id}/module/${next.id}`}>
-            <Button>Next Module</Button>
+            <Button variant={completed ? 'primary' : 'outline'}>Next Module</Button>
+          </Link>
+        ) : completed ? (
+          <Link to="/student/progress">
+            <Button>View Progress</Button>
           </Link>
         ) : (
           <Button disabled>Next Module</Button>

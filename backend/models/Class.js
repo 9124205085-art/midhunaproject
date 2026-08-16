@@ -1,19 +1,40 @@
 const mongoose = require('mongoose');
 
+/**
+ * Phase 7 — Weekend / Holiday community class
+ */
 const classSchema = new mongoose.Schema(
   {
-    course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
-    skill: { type: String, required: true },
-    date: { type: String, required: true },
-    day: { type: String, required: true, enum: ['Saturday', 'Sunday', 'Holiday'] },
-    time: { type: String, required: true },
-    communityCentre: { type: String, required: true },
+    title: { type: String, required: true, trim: true },
+    skill: {
+      type: String,
+      required: true,
+      enum: ['Abacus', 'Coding', 'Communication Skills', 'Logical Reasoning'],
+    },
+    description: { type: String, required: true },
+    date: { type: String, required: true }, // ISO YYYY-MM-DD
+    day: {
+      type: String,
+      required: true,
+      enum: ['Saturday', 'Sunday', 'Holiday'],
+    },
+    startTime: { type: String, required: true },
+    endTime: { type: String, required: true },
     location: { type: String, required: true },
-    volunteerName: { type: String, required: true },
-    availableSeats: { type: Number, required: true, min: 0 },
-    totalSeats: { type: Number, required: true },
+    facilitator: { type: String, required: true },
+    capacity: { type: Number, required: true, min: 1 },
+    registeredStudents: [
+      { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
+    ],
   },
   { timestamps: true }
 );
+
+classSchema.virtual('availableSeats').get(function availableSeats() {
+  return Math.max(0, this.capacity - (this.registeredStudents?.length || 0));
+});
+
+classSchema.set('toJSON', { virtuals: true });
+classSchema.set('toObject', { virtuals: true });
 
 module.exports = mongoose.model('Class', classSchema);

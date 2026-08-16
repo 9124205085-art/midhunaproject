@@ -1,53 +1,85 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Button from '../../components/Button';
 import Card from '../../components/Card';
 import ErrorMessage from '../../components/ErrorMessage';
 import Loading from '../../components/Loading';
-import { getProgress } from '../../services/studentService';
+import { getAllProgress } from '../../services/progressService';
 
+/**
+ * Phase 8 — My Learning Progress
+ */
 export default function Progress() {
-  const [data, setData] = useState(null);
+  const [items, setItems] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getProgress()
-      .then((res) => setData(res.data))
-      .catch((err) => setError(err.response?.data?.message || 'Failed to load progress.'))
-      .finally(() => setLoading(false));
+    let active = true;
+    getAllProgress()
+      .then((res) => {
+        if (active) setItems(res.data.progress || []);
+      })
+      .catch(() => {
+        if (active) setError('Unable to load your progress.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  if (loading) return <Loading />;
+  if (loading) return <Loading text="Loading your progress..." />;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">My Progress</h1>
+    <div className="mx-auto max-w-4xl px-4 py-8 overflow-x-hidden">
+      <h1 className="text-3xl font-bold text-stone-900 mb-2">My Learning Progress</h1>
+      <p className="text-stone-600 mb-6">Track completed modules for each skill you have started.</p>
+
       <ErrorMessage message={error} />
-      {data && (
-        <Card>
-          <p className="text-lg font-semibold mb-4">{data.fullName}</p>
-          <ul className="space-y-3 text-sm text-stone-700">
-            <li>Assessment: {data.assessmentCompleted ? 'Completed ✓' : 'Not Completed'}</li>
-            <li>Recommended Skill: {data.recommendedSkill}</li>
-            <li>Weekend Class: {data.classRegistered ? 'Registered ✓' : 'Not Registered'}</li>
-            <li>
-              Learning:{' '}
-              {data.learningProgress?.completedModules?.length
-                ? `Module ${Math.max(...data.learningProgress.completedModules) + 1} Completed ✓`
-                : 'Not started'}
-            </li>
-            <li>
-              Latest Quiz:{' '}
-              {data.latestQuiz ? `${data.latestQuiz.percentage}% (${data.latestQuiz.performance})` : 'Not taken'}
-            </li>
-          </ul>
-          <div className="mt-6">
-            <p className="mb-2 text-sm font-semibold">Overall Progress: {data.overallProgress}%</p>
-            <div className="h-3 w-full bg-stone-200">
-              <div className="h-3 bg-teal-700 transition-all" style={{ width: `${data.overallProgress}%` }} />
-            </div>
-          </div>
+
+      {items.length === 0 && !error && (
+        <Card className="rounded-xl text-center">
+          <p className="font-semibold text-stone-900">You haven&apos;t started learning yet.</p>
+          <p className="mt-2 text-sm text-stone-600 mb-4">
+            Start learning a skill to track your progress.
+          </p>
+          <Link to="/student/skills">
+            <Button>Explore Skills</Button>
+          </Link>
         </Card>
       )}
+
+      <div className="space-y-4">
+        {items.map((item) => (
+          <Card key={item.skillId} className="rounded-xl">
+            <h2 className="text-xl font-bold text-stone-900">{item.skillName}</h2>
+            <p className="mt-2 text-sm text-stone-600">
+              {item.completedModules} / {item.totalModules} Modules Completed
+            </p>
+            <p className="mt-1 text-2xl font-extrabold text-teal-800">{item.percentage}%</p>
+            <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-stone-200">
+              <div
+                className="h-3 rounded-full bg-teal-700"
+                style={{ width: `${item.percentage}%` }}
+              />
+            </div>
+            <p className="mt-2 text-sm font-semibold text-stone-700">Status: {item.status}</p>
+            {item.percentage === 100 && (
+              <p className="mt-2 text-sm text-teal-900">
+                Congratulations! You completed all learning modules for this skill.
+              </p>
+            )}
+            <div className="mt-4">
+              <Link to={`/student/skills/${item.skillId}`}>
+                <Button>{item.percentage === 100 ? 'Review Skill' : 'Continue Learning'}</Button>
+              </Link>
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

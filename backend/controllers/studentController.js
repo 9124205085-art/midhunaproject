@@ -1,6 +1,7 @@
 const Student = require('../models/Student');
-const Enrollment = require('../models/Enrollment');
+const ClassSession = require('../models/Class');
 const { generateRecommendations } = require('../services/recommendationService');
+const { getProgressSummaryForStudent } = require('./progressController');
 
 /**
  * Phase 3 — Student dashboard overview
@@ -16,16 +17,19 @@ const getDashboard = async (req, res) => {
       });
     }
 
-    // Real enrollment check only — never invent class data (Phase 7)
-    let hasEnrollment = false;
+    // Phase 7 — real weekend class registration check
+    let hasClassRegistration = false;
     try {
-      const enrollment = await Enrollment.findOne({ student: student._id }).select('_id');
-      hasEnrollment = !!enrollment;
+      const registered = await ClassSession.findOne({
+        registeredStudents: student._id,
+      }).select('_id');
+      hasClassRegistration = !!registered;
     } catch {
-      hasEnrollment = false;
+      hasClassRegistration = false;
     }
 
     const assessmentCompleted = !!student.assessmentCompleted;
+    const progressSummary = await getProgressSummaryForStudent(student._id);
 
     return res.json({
       success: true,
@@ -41,9 +45,9 @@ const getDashboard = async (req, res) => {
       },
       assessmentStatus: assessmentCompleted ? 'Completed' : 'Not Completed',
       recommendationStatus: assessmentCompleted ? 'Available' : 'Complete assessment first',
-      classStatus: hasEnrollment ? 'Registered' : 'Not Registered',
-      // Progress calculation belongs to Phase 8
-      progressStatus: 'Not Started',
+      classStatus: hasClassRegistration ? 'Registered' : 'Not Registered',
+      progressStatus: progressSummary.progressStatus,
+      learningProgress: progressSummary,
     });
   } catch (error) {
     console.error('Dashboard error:', error.message);
