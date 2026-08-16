@@ -13,7 +13,18 @@ const studentSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: { type: String, default: 'student', enum: ['student'] },
     assessmentCompleted: { type: Boolean, default: false },
-    // Reserved for later phases (not used in Phase 2)
+    // Phase 4 — Interest Assessment
+    assessment: {
+      answers: [
+        {
+          questionId: { type: Number },
+          answer: { type: String },
+          category: { type: String },
+        },
+      ],
+      completedAt: { type: Date },
+    },
+    // Kept for compatibility with later recommendation phase
     assessmentAnswers: [{ type: String }],
     recommendations: [
       {

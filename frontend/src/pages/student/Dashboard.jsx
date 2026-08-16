@@ -87,7 +87,7 @@ export default function Dashboard() {
           description="Tell us about your interests so we can identify suitable skills for you."
           status={data.assessmentStatus}
           statusTone={assessmentDone ? 'success' : 'warning'}
-          buttonLabel="Take Assessment"
+          buttonLabel={assessmentDone ? 'Retake Assessment' : 'Take Assessment'}
           to="/student/assessment"
         />
         <StatusCard

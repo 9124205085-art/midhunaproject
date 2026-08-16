@@ -7,12 +7,13 @@ import ComingSoon from './pages/ComingSoon';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import Assessment from './pages/student/Assessment';
 import Dashboard from './pages/student/Dashboard';
 import Profile from './pages/student/Profile';
+import Recommendations from './pages/student/Recommendations';
 
 /**
- * Phase 1 + Phase 2 + Phase 3
- * Later-phase routes use ComingSoon placeholders only (no fake logic).
+ * Phase 1–5 active. Later phases use ComingSoon placeholders.
  */
 function App() {
   return (
@@ -42,13 +43,11 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-
-              {/* Navigation targets for later phases — no feature logic yet */}
               <Route
                 path="/student/assessment"
                 element={
                   <ProtectedRoute role="student">
-                    <ComingSoon title="Interest Assessment" phaseHint="Phase 4" />
+                    <Assessment />
                   </ProtectedRoute>
                 }
               />
@@ -56,10 +55,11 @@ function App() {
                 path="/student/recommendations"
                 element={
                   <ProtectedRoute role="student">
-                    <ComingSoon title="Smart Recommendations" phaseHint="Phase 5" />
+                    <Recommendations />
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/classes"
                 element={
