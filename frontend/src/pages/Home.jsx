@@ -66,11 +66,11 @@ export default function Home() {
 
       <section className="mx-auto max-w-6xl px-4 pb-16">
         <div className="border border-teal-200 bg-teal-50/80 px-6 py-8">
-          <h2 className="text-2xl font-bold text-teal-900">NO PERSONAL DEVICE? NO PROBLEM.</h2>
+          <h2 className="text-2xl font-bold text-teal-900">ACCESSIBILITY</h2>
           <p className="mt-3 max-w-3xl text-stone-700 leading-relaxed">
-            Students can access the system with support from teachers or volunteers at participating
-            community centres. The platform is designed for community-centre use — a volunteer can
-            help the student register, assess interests, and join weekend classes.
+            The system is designed to be accessed through shared devices at community centres when
+            students do not have personal devices. Teachers and volunteers can help students
+            register, complete the interest assessment, and join weekend or holiday classes.
           </p>
         </div>
       </section>

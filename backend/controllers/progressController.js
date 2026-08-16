@@ -1,12 +1,13 @@
 const Progress = require('../models/Progress');
 const { getSkill, isValidSkillModule, skillsCatalog } = require('../data/skillsCatalog');
+const { getQuizResultsByStudent } = require('./quizController');
 
 const calcPercentage = (completed, total) => {
   if (!total) return 0;
   return Math.round((completed / total) * 100);
 };
 
-const buildSkillProgressResponse = (skill, progressDoc) => {
+const buildSkillProgressResponse = (skill, progressDoc, quiz = null) => {
   const completedSet = new Set(
     (progressDoc?.completedModules || []).map((m) => m.moduleId)
   );
@@ -26,24 +27,51 @@ const buildSkillProgressResponse = (skill, progressDoc) => {
       title: m.title,
       completed: completedSet.has(m.id),
     })),
+    quiz: quiz
+      ? {
+          score: quiz.score,
+          total: quiz.total,
+          percentage: quiz.percentage,
+          performance: quiz.performance,
+          resultId: quiz.resultId,
+        }
+      : null,
   };
 };
 
-/**
- * GET /api/progress
- */
+const matchQuizToSkill = (skill, quizResults) => {
+  if (!quizResults?.length) return null;
+  return (
+    quizResults.find((q) => q.skillId === skill.id) ||
+    quizResults.find(
+      (q) => q.courseName && q.courseName.toLowerCase() === skill.name.toLowerCase()
+    ) ||
+    (skill.id === 'communication'
+      ? quizResults.find((q) => q.skillId === 'communication-skills')
+      : null)
+  );
+};
+
 const getAllProgress = async (req, res) => {
   try {
     const records = await Progress.find({ studentId: req.user._id });
     const bySkill = Object.fromEntries(records.map((r) => [r.skillId, r]));
+    const quizResults = await getQuizResultsByStudent(req.user._id);
 
     const items = skillsCatalog
-      .map((skill) => buildSkillProgressResponse(skill, bySkill[skill.id]))
-      .filter((item) => item.completedModules > 0);
+      .map((skill) =>
+        buildSkillProgressResponse(
+          skill,
+          bySkill[skill.id],
+          matchQuizToSkill(skill, quizResults)
+        )
+      )
+      .filter((item) => item.completedModules > 0 || item.quiz);
 
     return res.json({
       success: true,
       progress: items,
+      latestQuizzes: quizResults,
     });
   } catch (error) {
     console.error('Get all progress error:', error.message);
@@ -54,9 +82,6 @@ const getAllProgress = async (req, res) => {
   }
 };
 
-/**
- * GET /api/progress/:skillId
- */
 const getSkillProgress = async (req, res) => {
   try {
     const { skillId } = req.params;
@@ -72,8 +97,9 @@ const getSkillProgress = async (req, res) => {
       studentId: req.user._id,
       skillId,
     });
-
-    const result = buildSkillProgressResponse(skill, progressDoc);
+    const quizResults = await getQuizResultsByStudent(req.user._id);
+    const quiz = matchQuizToSkill(skill, quizResults);
+    const result = buildSkillProgressResponse(skill, progressDoc, quiz);
 
     return res.json({
       success: true,
@@ -88,9 +114,6 @@ const getSkillProgress = async (req, res) => {
   }
 };
 
-/**
- * POST /api/progress/:skillId/module/:moduleId/complete
- */
 const completeModule = async (req, res) => {
   try {
     const { skillId, moduleId } = req.params;
@@ -155,7 +178,6 @@ const completeModule = async (req, res) => {
     });
   } catch (error) {
     if (error.code === 11000) {
-      // race on unique index — retry as update path
       return res.status(409).json({
         success: false,
         message: 'Unable to update progress. Please try again.',
@@ -169,9 +191,6 @@ const completeModule = async (req, res) => {
   }
 };
 
-/**
- * Summary for dashboard (optional helper used by studentController)
- */
 const getProgressSummaryForStudent = async (studentId) => {
   const records = await Progress.find({ studentId });
   if (!records.length) {

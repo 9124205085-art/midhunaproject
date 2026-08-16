@@ -113,6 +113,11 @@ export default function SkillDetails() {
         <Link to="/student/skills">
           <Button variant="outline">Back to Skills</Button>
         </Link>
+        {percentage === 100 && (
+          <Link to={`/student/skills/${skill.id}/quiz`}>
+            <Button>TAKE QUIZ</Button>
+          </Link>
+        )}
         <Link to="/student/progress">
           <Button variant="ghost">View Progress</Button>
         </Link>

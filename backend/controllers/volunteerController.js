@@ -6,6 +6,7 @@ const ClassSession = require('../models/Class');
 const Progress = require('../models/Progress');
 const { generateRecommendations } = require('../services/recommendationService');
 const { getSkill } = require('../data/skillsCatalog');
+const { getLatestQuizForStudent } = require('./quizController');
 
 const generateToken = (userId, role) =>
   jwt.sign({ userId, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -197,6 +198,8 @@ const getStudentDetails = async (req, res) => {
       };
     });
 
+    const latestQuiz = await getLatestQuizForStudent(student._id);
+
     return res.json({
       success: true,
       student: {
@@ -213,7 +216,10 @@ const getStudentDetails = async (req, res) => {
         registeredClass: reg.classTitle,
         registeredClassSkill: reg.classSkill,
         progress,
-        latestQuizScore: null, // Quiz module not active in current phased UI
+        latestQuizScore: latestQuiz
+          ? `${latestQuiz.percentage}% (${latestQuiz.score}/${latestQuiz.total}) — ${latestQuiz.courseName}`
+          : 'Not available',
+        latestQuiz,
       },
     });
   } catch (error) {

@@ -7,7 +7,7 @@ import Loading from '../../components/Loading';
 import { getAllProgress } from '../../services/progressService';
 
 /**
- * Phase 8 — My Learning Progress
+ * Phase 8 + Phase 10 — Learning progress + quiz scores
  */
 export default function Progress() {
   const [items, setItems] = useState([]);
@@ -36,7 +36,9 @@ export default function Progress() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 overflow-x-hidden">
       <h1 className="text-3xl font-bold text-stone-900 mb-2">My Learning Progress</h1>
-      <p className="text-stone-600 mb-6">Track completed modules for each skill you have started.</p>
+      <p className="text-stone-600 mb-6">
+        Track completed modules and quiz results for each skill you have started.
+      </p>
 
       <ErrorMessage message={error} />
 
@@ -67,15 +69,26 @@ export default function Progress() {
               />
             </div>
             <p className="mt-2 text-sm font-semibold text-stone-700">Status: {item.status}</p>
+            {item.quiz && (
+              <p className="mt-2 text-sm text-stone-700">
+                Quiz: <strong>{item.quiz.percentage}%</strong> ({item.quiz.score}/{item.quiz.total}) —{' '}
+                {item.quiz.performance}
+              </p>
+            )}
             {item.percentage === 100 && (
               <p className="mt-2 text-sm text-teal-900">
                 Congratulations! You completed all learning modules for this skill.
               </p>
             )}
-            <div className="mt-4">
+            <div className="mt-4 flex flex-wrap gap-3">
               <Link to={`/student/skills/${item.skillId}`}>
                 <Button>{item.percentage === 100 ? 'Review Skill' : 'Continue Learning'}</Button>
               </Link>
+              {item.percentage === 100 && (
+                <Link to={`/student/skills/${item.skillId}/quiz`}>
+                  <Button variant="outline">{item.quiz ? 'Retake Quiz' : 'TAKE QUIZ'}</Button>
+                </Link>
+              )}
             </div>
           </Card>
         ))}

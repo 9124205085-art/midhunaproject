@@ -159,9 +159,14 @@ export default function ModuleDetails() {
             <Button variant={completed ? 'primary' : 'outline'}>Next Module</Button>
           </Link>
         ) : completed ? (
-          <Link to="/student/progress">
-            <Button>View Progress</Button>
-          </Link>
+          <>
+            <Link to={`/student/skills/${skill.id}/quiz`}>
+              <Button>TAKE QUIZ</Button>
+            </Link>
+            <Link to="/student/progress">
+              <Button variant="outline">View Progress</Button>
+            </Link>
+          </>
         ) : (
           <Button disabled>Next Module</Button>
         )}

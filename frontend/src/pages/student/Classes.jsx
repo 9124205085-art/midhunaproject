@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
@@ -7,12 +7,13 @@ import Loading from '../../components/Loading';
 import { getClasses } from '../../services/classService';
 
 /**
- * Phase 7 — Weekend & Holiday Learning list
+ * Phase 7 + Phase 10 — Weekend & Holiday Learning list with filters
  */
 export default function Classes() {
   const [classes, setClasses] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({ skill: '', day: '', location: '' });
 
   useEffect(() => {
     let active = true;
@@ -31,6 +32,24 @@ export default function Classes() {
     };
   }, []);
 
+  const filtered = useMemo(() => {
+    return classes.filter((c) => {
+      if (filters.skill && c.skill !== filters.skill) return false;
+      if (filters.day && c.day !== filters.day) return false;
+      if (
+        filters.location &&
+        !String(c.location || '')
+          .toLowerCase()
+          .includes(filters.location.toLowerCase())
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [classes, filters]);
+
+  const skills = [...new Set(classes.map((c) => c.skill))].sort();
+
   if (loading) return <Loading text="Loading weekend classes..." />;
 
   return (
@@ -45,10 +64,11 @@ export default function Classes() {
       </header>
 
       <div className="mb-6 rounded-xl border border-teal-200 bg-teal-50/80 px-5 py-4">
-        <h2 className="font-bold text-teal-900">NO PERSONAL DEVICE? NO PROBLEM.</h2>
+        <h2 className="font-bold text-teal-900">ACCESSIBILITY</h2>
         <p className="mt-1 text-sm text-stone-700">
-          Students can register with support from teachers or volunteers at participating community
-          centres and schools. A personal smartphone is not required.
+          The system is designed to be accessed through shared devices at community centres when
+          students do not have personal devices. Teachers and volunteers can help students register
+          and learn.
         </p>
       </div>
 
@@ -58,17 +78,50 @@ export default function Classes() {
         </Link>
       </div>
 
+      <Card className="mb-6 rounded-xl">
+        <div className="grid gap-3 sm:grid-cols-3">
+          <select
+            className="border border-stone-300 px-3 py-2 text-sm"
+            value={filters.skill}
+            onChange={(e) => setFilters({ ...filters, skill: e.target.value })}
+          >
+            <option value="">All Skills</option>
+            {skills.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+          <select
+            className="border border-stone-300 px-3 py-2 text-sm"
+            value={filters.day}
+            onChange={(e) => setFilters({ ...filters, day: e.target.value })}
+          >
+            <option value="">All Days</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+            <option value="Holiday">Holiday</option>
+          </select>
+          <input
+            className="border border-stone-300 px-3 py-2 text-sm"
+            placeholder="Filter by location"
+            value={filters.location}
+            onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+          />
+        </div>
+      </Card>
+
       <ErrorMessage message={error} />
 
-      {!error && classes.length === 0 && (
+      {!error && filtered.length === 0 && (
         <Card className="rounded-xl text-center">
-          <p className="font-semibold text-stone-900">No weekend classes are currently available.</p>
-          <p className="mt-2 text-sm text-stone-600">Please check again later.</p>
+          <p className="font-semibold text-stone-900">No weekend classes match your filters.</p>
+          <p className="mt-2 text-sm text-stone-600">Try clearing filters or check again later.</p>
         </Card>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {classes.map((c) => (
+        {filtered.map((c) => (
           <Card key={c.id} className="rounded-xl">
             <p className="text-xs font-semibold uppercase tracking-wide text-teal-800">{c.skill}</p>
             <h2 className="mt-1 text-xl font-bold text-stone-900">{c.title}</h2>

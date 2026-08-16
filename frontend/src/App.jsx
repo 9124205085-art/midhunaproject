@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -25,6 +25,9 @@ import VolunteerStudentDetails from './pages/volunteer/StudentDetails';
 import ManageClasses from './pages/volunteer/ManageClasses';
 import AddClass from './pages/volunteer/AddClass';
 import EditClass from './pages/volunteer/EditClass';
+import SkillQuiz from './pages/student/SkillQuiz';
+import SkillQuizResult from './pages/student/SkillQuizResult';
+import NotFound from './pages/NotFound';
 
 function AppChrome({ children }) {
   const { role, isAuthenticated } = useAuth();
@@ -140,6 +143,22 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/student/skills/:skillId/quiz"
+          element={
+            <ProtectedRoute role="student">
+              <SkillQuiz />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/quiz/result/:resultId"
+          element={
+            <ProtectedRoute role="student">
+              <SkillQuizResult />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Phase 9 — Volunteer */}
         <Route
@@ -191,7 +210,7 @@ function AppRoutes() {
           }
         />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AppChrome>
   );
