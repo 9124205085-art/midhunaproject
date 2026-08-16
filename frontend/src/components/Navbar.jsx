@@ -8,7 +8,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate('/login');
   };
 
   const linkClass = ({ isActive }) =>
@@ -23,27 +23,21 @@ export default function Navbar() {
         <nav className="flex flex-wrap items-center gap-4">
           {!isAuthenticated && (
             <>
-              <NavLink to="/login" className={linkClass}>Student Login</NavLink>
-              <NavLink to="/volunteer/login" className={linkClass}>Volunteer</NavLink>
+              <NavLink to="/login" className={linkClass}>
+                Student Login
+              </NavLink>
               <Button onClick={() => navigate('/register')}>Get Started</Button>
             </>
           )}
           {isAuthenticated && role === 'student' && (
             <>
-              <NavLink to="/student/dashboard" className={linkClass}>Dashboard</NavLink>
-              <NavLink to="/student/assessment" className={linkClass}>Assessment</NavLink>
-              <NavLink to="/student/recommendations" className={linkClass}>Recommendations</NavLink>
-              <NavLink to="/classes" className={linkClass}>Classes</NavLink>
-              <NavLink to="/student/progress" className={linkClass}>Progress</NavLink>
-              <span className="text-sm text-stone-500 hidden sm:inline">{user?.fullName}</span>
-              <Button variant="outline" onClick={handleLogout}>Logout</Button>
-            </>
-          )}
-          {isAuthenticated && role === 'volunteer' && (
-            <>
-              <NavLink to="/volunteer/dashboard" className={linkClass}>Dashboard</NavLink>
-              <NavLink to="/volunteer/classes" className={linkClass}>Manage Classes</NavLink>
-              <Button variant="outline" onClick={handleLogout}>Logout</Button>
+              <NavLink to="/student/dashboard" className={linkClass}>
+                Dashboard
+              </NavLink>
+              <span className="text-sm text-stone-500 hidden sm:inline">{user?.name}</span>
+              <Button variant="outline" onClick={handleLogout}>
+                Logout
+              </Button>
             </>
           )}
         </nav>

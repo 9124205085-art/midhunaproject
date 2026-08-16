@@ -3,150 +3,273 @@ const jwt = require('jsonwebtoken');
 const Student = require('../models/Student');
 const Volunteer = require('../models/Volunteer');
 
-const generateToken = (id, role) =>
-  jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+const generateToken = (userId, role) =>
+  jwt.sign({ userId, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
+/**
+ * POST /api/students/register
+ * Phase 2 — Student registration
+ */
 const registerStudent = async (req, res) => {
   try {
     const {
-      fullName,
+      name,
       age,
-      classGrade,
+      className,
       school,
       location,
-      preferredLanguage,
-      parentContact,
+      language,
+      guardianContact,
       username,
       password,
       confirmPassword,
     } = req.body;
 
     if (
-      !fullName ||
-      !age ||
-      !classGrade ||
-      !school ||
-      !location ||
-      !preferredLanguage ||
-      !parentContact ||
-      !username ||
+      !name?.trim() ||
+      age === undefined ||
+      age === null ||
+      age === '' ||
+      !className?.trim() ||
+      !school?.trim() ||
+      !location?.trim() ||
+      !language?.trim() ||
+      !guardianContact?.trim() ||
+      !username?.trim() ||
       !password ||
       !confirmPassword
     ) {
-      return res.status(400).json({ message: 'All fields are required.' });
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required.',
+      });
     }
 
     const ageNum = Number(age);
-    if (isNaN(ageNum) || ageNum < 5 || ageNum > 25) {
-      return res.status(400).json({ message: 'Please enter a valid age (5-25).' });
+    if (Number.isNaN(ageNum) || ageNum < 5 || ageNum > 25) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter a valid age (5-25).',
+      });
     }
 
     if (username.trim().length < 3) {
-      return res.status(400).json({ message: 'Username must be at least 3 characters.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Username must be at least 3 characters.',
+      });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters.',
+      });
     }
 
     if (password !== confirmPassword) {
-      return res.status(400).json({ message: 'Passwords do not match.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Passwords do not match.',
+      });
     }
 
-    const exists = await Student.findOne({ username: username.toLowerCase().trim() });
+    const normalizedUsername = username.toLowerCase().trim();
+    const exists = await Student.findOne({ username: normalizedUsername });
     if (exists) {
-      return res.status(400).json({ message: 'Username already exists. Please choose another.' });
+      return res.status(409).json({
+        success: false,
+        message: 'Username already exists',
+      });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
-    const student = await Student.create({
-      fullName,
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await Student.create({
+      name: name.trim(),
       age: ageNum,
-      classGrade,
-      school,
-      location,
-      preferredLanguage,
-      parentContact,
-      username: username.toLowerCase().trim(),
-      password: hashed,
+      className: className.trim(),
+      school: school.trim(),
+      location: location.trim(),
+      language: language.trim(),
+      guardianContact: guardianContact.trim(),
+      username: normalizedUsername,
+      password: hashedPassword,
+      role: 'student',
+      assessmentCompleted: false,
     });
 
-    res.status(201).json({
-      message: 'Registration successful. Please login.',
-      studentId: student._id,
+    return res.status(201).json({
+      success: true,
+      message: 'Registration successful',
     });
   } catch (error) {
-    res.status(500).json({ message: error.message || 'Registration failed.' });
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: 'Username already exists',
+      });
+    }
+    console.error('Registration error:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
+/**
+ * POST /api/students/login
+ * Phase 2 — Student login
+ */
 const loginStudent = async (req, res) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password) {
-      return res.status(400).json({ message: 'Username and password are required.' });
+
+    if (!username?.trim() || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username and password are required.',
+      });
     }
 
-    const student = await Student.findOne({ username: username.toLowerCase().trim() });
+    const student = await Student.findOne({
+      username: username.toLowerCase().trim(),
+    });
+
     if (!student) {
-      return res.status(401).json({ message: 'Invalid username or password.' });
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid username or password.',
+      });
     }
 
     const match = await bcrypt.compare(password, student.password);
     if (!match) {
-      return res.status(401).json({ message: 'Invalid username or password.' });
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid username or password.',
+      });
     }
 
-    res.json({
-      token: generateToken(student._id, 'student'),
-      role: 'student',
+    const token = generateToken(student._id, student.role || 'student');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token,
+      role: student.role || 'student',
       user: {
         id: student._id,
-        fullName: student.fullName,
+        name: student.name,
         username: student.username,
-        classGrade: student.classGrade,
+        className: student.className,
         location: student.location,
+        role: student.role || 'student',
         assessmentCompleted: student.assessmentCompleted,
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message || 'Login failed.' });
+    console.error('Login error:', error.message);
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
+/** Kept for later phases — not used in Phase 2 UI */
 const loginVolunteer = async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
-      return res.status(400).json({ message: 'Username and password are required.' });
+      return res.status(400).json({
+        success: false,
+        message: 'Username and password are required.',
+      });
     }
 
-    const volunteer = await Volunteer.findOne({ username: username.toLowerCase().trim() });
+    const volunteer = await Volunteer.findOne({
+      username: username.toLowerCase().trim(),
+    });
     if (!volunteer) {
-      return res.status(401).json({ message: 'Invalid username or password.' });
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid username or password.',
+      });
     }
 
     const match = await bcrypt.compare(password, volunteer.password);
     if (!match) {
-      return res.status(401).json({ message: 'Invalid username or password.' });
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid username or password.',
+      });
     }
 
-    res.json({
+    return res.json({
+      success: true,
       token: generateToken(volunteer._id, 'volunteer'),
       role: 'volunteer',
       user: {
         id: volunteer._id,
-        fullName: volunteer.fullName,
+        name: volunteer.fullName,
         username: volunteer.username,
+        role: 'volunteer',
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message || 'Login failed.' });
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
   }
 };
 
 const getMe = async (req, res) => {
-  res.json({ user: req.user, role: req.role });
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized access',
+      });
+    }
+
+    const userPayload =
+      req.role === 'student'
+        ? {
+            id: req.user._id,
+            name: req.user.name,
+            username: req.user.username,
+            className: req.user.className,
+            location: req.user.location,
+            role: 'student',
+            assessmentCompleted: req.user.assessmentCompleted,
+          }
+        : {
+            id: req.user._id,
+            name: req.user.fullName,
+            username: req.user.username,
+            role: 'volunteer',
+          };
+
+    return res.json({
+      success: true,
+      user: userPayload,
+      role: req.role,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong. Please try again.',
+    });
+  }
 };
 
-module.exports = { registerStudent, loginStudent, loginVolunteer, getMe };
+module.exports = {
+  registerStudent,
+  loginStudent,
+  loginVolunteer,
+  getMe,
+  generateToken,
+};

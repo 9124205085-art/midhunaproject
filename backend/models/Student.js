@@ -2,16 +2,18 @@ const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema(
   {
-    fullName: { type: String, required: true, trim: true },
+    name: { type: String, required: true, trim: true },
     age: { type: Number, required: true, min: 5, max: 25 },
-    classGrade: { type: String, required: true },
-    school: { type: String, required: true },
-    location: { type: String, required: true },
-    preferredLanguage: { type: String, required: true },
-    parentContact: { type: String, required: true },
+    className: { type: String, required: true, trim: true },
+    school: { type: String, required: true, trim: true },
+    location: { type: String, required: true, trim: true },
+    language: { type: String, required: true, trim: true },
+    guardianContact: { type: String, required: true, trim: true },
     username: { type: String, required: true, unique: true, trim: true, lowercase: true },
     password: { type: String, required: true },
+    role: { type: String, default: 'student', enum: ['student'] },
     assessmentCompleted: { type: Boolean, default: false },
+    // Reserved for later phases (not used in Phase 2)
     assessmentAnswers: [{ type: String }],
     recommendations: [
       {

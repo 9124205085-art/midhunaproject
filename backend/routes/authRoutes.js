@@ -1,12 +1,13 @@
 const express = require('express');
-const { registerStudent, loginStudent, loginVolunteer, getMe } = require('../controllers/authController');
+const { loginVolunteer, getMe } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-router.post('/register', registerStudent);
-router.post('/login', loginStudent);
-router.post('/volunteer/login', loginVolunteer);
+// Session restore for AuthContext (Phase 2)
 router.get('/me', protect, getMe);
+
+// Reserved for later volunteer phase
+router.post('/volunteer/login', loginVolunteer);
 
 module.exports = router;

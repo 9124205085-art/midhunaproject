@@ -4,16 +4,16 @@ import Button from '../../components/Button';
 import Card from '../../components/Card';
 import ErrorMessage from '../../components/ErrorMessage';
 import { registerStudent } from '../../services/authService';
-import { validateRegister } from '../../utils/validation';
+import { getAuthErrorMessage, validateRegister } from '../../utils/validation';
 
 const initial = {
-  fullName: '',
+  name: '',
   age: '',
-  classGrade: '',
+  className: '',
   school: '',
   location: '',
-  preferredLanguage: '',
-  parentContact: '',
+  language: '',
+  guardianContact: '',
   username: '',
   password: '',
   confirmPassword: '',
@@ -33,30 +33,31 @@ export default function Register() {
     e.preventDefault();
     setApiError('');
     setSuccess('');
+
     const v = validateRegister(form);
     setErrors(v);
     if (Object.keys(v).length) return;
 
     setLoading(true);
     try {
-      await registerStudent(form);
-      setSuccess('Registration successful. Redirecting to login...');
+      const { data } = await registerStudent(form);
+      setSuccess(data.message || 'Registration successful');
       setTimeout(() => navigate('/login'), 1200);
     } catch (err) {
-      setApiError(err.response?.data?.message || 'Registration failed.');
+      setApiError(getAuthErrorMessage(err));
     } finally {
       setLoading(false);
     }
   };
 
   const fields = [
-    { name: 'fullName', label: 'Full Name' },
+    { name: 'name', label: 'Full Name' },
     { name: 'age', label: 'Age', type: 'number' },
-    { name: 'classGrade', label: 'Class' },
+    { name: 'className', label: 'Class' },
     { name: 'school', label: 'School' },
     { name: 'location', label: 'Location' },
-    { name: 'preferredLanguage', label: 'Preferred Language' },
-    { name: 'parentContact', label: 'Parent/Guardian Contact' },
+    { name: 'language', label: 'Preferred Language' },
+    { name: 'guardianContact', label: 'Parent/Guardian Contact' },
     { name: 'username', label: 'Username' },
     { name: 'password', label: 'Password', type: 'password' },
     { name: 'confirmPassword', label: 'Confirm Password', type: 'password' },
@@ -64,30 +65,35 @@ export default function Register() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <Card title="Student Registration" subtitle="Create an account to begin your learning journey.">
+      <Card title="Create Student Account" subtitle="Start your personalized learning journey.">
         <ErrorMessage message={apiError} />
         {success && (
           <div className="mb-4 border border-teal-300 bg-teal-50 px-4 py-3 text-sm text-teal-900">
             {success}
           </div>
         )}
-        <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
+        <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2" noValidate>
           {fields.map((f) => (
-            <div key={f.name} className={f.name.includes('password') || f.name === 'username' ? 'sm:col-span-1' : ''}>
+            <div key={f.name}>
               <label className="mb-1 block text-sm font-medium text-stone-700">{f.label}</label>
               <input
                 name={f.name}
                 type={f.type || 'text'}
                 value={form[f.name]}
                 onChange={onChange}
-                className="w-full border border-stone-300 bg-white px-3 py-2 text-sm focus:border-teal-600 focus:outline-none"
+                disabled={loading}
+                className="w-full border border-stone-300 bg-white px-3 py-2 text-sm focus:border-teal-600 focus:outline-none disabled:opacity-60"
               />
               {errors[f.name] && <p className="mt-1 text-xs text-orange-700">{errors[f.name]}</p>}
             </div>
           ))}
           <div className="sm:col-span-2 flex flex-wrap items-center gap-3 pt-2">
-            <Button type="submit" disabled={loading}>{loading ? 'Registering...' : 'Register'}</Button>
-            <Link to="/login" className="text-sm text-teal-800 hover:underline">Already registered? Login</Link>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create Account'}
+            </Button>
+            <Link to="/login" className="text-sm text-teal-800 hover:underline">
+              Already registered? Login
+            </Link>
           </div>
         </form>
       </Card>

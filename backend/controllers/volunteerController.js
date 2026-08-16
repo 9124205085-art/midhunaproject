@@ -7,7 +7,7 @@ const getDashboard = async (req, res) => {
     const studentCount = await Student.countDocuments();
     const classCount = await ClassSession.countDocuments();
     const students = await Student.find()
-      .select('fullName classGrade location assessmentCompleted recommendedSkill')
+      .select('name className location assessmentCompleted recommendedSkill')
       .sort({ createdAt: -1 });
     const classes = await ClassSession.find().populate('course', 'name').sort({ date: 1 });
     const courses = await Course.find().select('name');
@@ -28,7 +28,7 @@ const getDashboard = async (req, res) => {
 const getStudents = async (req, res) => {
   try {
     const students = await Student.find()
-      .select('fullName classGrade location assessmentCompleted recommendedSkill school age')
+      .select('name className location assessmentCompleted recommendedSkill school age')
       .sort({ createdAt: -1 });
     res.json(students);
   } catch (error) {

@@ -2,32 +2,67 @@ const jwt = require('jsonwebtoken');
 const Student = require('../models/Student');
 const Volunteer = require('../models/Volunteer');
 
+/**
+ * JWT auth middleware
+ * Expects: Authorization: Bearer <token>
+ * JWT payload: { userId, role }
+ */
 const protect = async (req, res, next) => {
   let token;
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
     token = req.headers.authorization.split(' ')[1];
   }
 
   if (!token) {
-    return res.status(401).json({ message: 'Not authorized. Please login.' });
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized access',
+    });
   }
 
   try {
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is missing from environment.');
+      return res.status(500).json({
+        success: false,
+        message: 'Something went wrong. Please try again.',
+      });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role === 'volunteer') {
-      req.user = await Volunteer.findById(decoded.id).select('-password');
+    const userId = decoded.userId || decoded.id;
+    const role = decoded.role || 'student';
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized access',
+      });
+    }
+
+    if (role === 'volunteer') {
+      req.user = await Volunteer.findById(userId).select('-password');
       req.role = 'volunteer';
     } else {
-      req.user = await Student.findById(decoded.id).select('-password');
+      req.user = await Student.findById(userId).select('-password');
       req.role = 'student';
     }
 
     if (!req.user) {
-      return res.status(401).json({ message: 'User not found.' });
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized access',
+      });
     }
+
+    req.userId = userId;
     next();
   } catch (error) {
-    return res.status(401).json({ message: 'Invalid or expired token.' });
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized access',
+    });
   }
 };
 

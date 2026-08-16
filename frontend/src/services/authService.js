@@ -1,6 +1,16 @@
 import api from './api';
 
-export const registerStudent = (data) => api.post('/auth/register', data);
-export const loginStudent = (data) => api.post('/auth/login', data);
-export const loginVolunteer = (data) => api.post('/auth/volunteer/login', data);
+export const registerStudent = (data) => api.post('/students/register', data);
+
+export const loginStudent = (data) => api.post('/students/login', data);
+
+export const logoutStudent = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+};
+
+/** Used by AuthContext to restore session after refresh */
 export const getMe = () => api.get('/auth/me');
+
+/** Reserved for later phases */
+export const loginVolunteer = (data) => api.post('/auth/volunteer/login', data);

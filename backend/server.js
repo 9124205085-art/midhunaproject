@@ -4,6 +4,8 @@ const cors = require('cors');
 const connectDB = require('./config/database');
 
 const authRoutes = require('./routes/authRoutes');
+const studentsRoutes = require('./routes/studentsRoutes');
+// Later-phase routes kept mounted but not used by Phase 2 UI
 const studentRoutes = require('./routes/studentRoutes');
 const assessmentRoutes = require('./routes/assessmentRoutes');
 const recommendationRoutes = require('./routes/recommendationRoutes');
@@ -23,7 +25,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Smart Community Education API running' });
 });
 
+// Phase 2 — Student Authentication
+app.use('/api/students', studentsRoutes);
 app.use('/api/auth', authRoutes);
+
+// Reserved for later phases
 app.use('/api/student', studentRoutes);
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/recommendations', recommendationRoutes);

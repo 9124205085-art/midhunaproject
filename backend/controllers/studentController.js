@@ -19,12 +19,12 @@ const getDashboard = async (req, res) => {
 
     res.json({
       student: {
-        fullName: student.fullName,
-        classGrade: student.classGrade,
+        name: student.name,
+        className: student.className,
         location: student.location,
         school: student.school,
-        preferredLanguage: student.preferredLanguage,
-        parentContact: student.parentContact,
+        language: student.language,
+        guardianContact: student.guardianContact,
         assessmentCompleted: student.assessmentCompleted,
         recommendedSkill: student.recommendedSkill,
       },
@@ -68,7 +68,7 @@ const getProgress = async (req, res) => {
     overall = Math.min(100, overall);
 
     res.json({
-      fullName: student.fullName,
+      name: student.name,
       assessmentCompleted: student.assessmentCompleted,
       recommendedSkill: student.recommendedSkill || 'Not available',
       classRegistered: !!enrollment,

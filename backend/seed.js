@@ -382,18 +382,20 @@ const seed = async () => {
     });
     console.log('Seeded volunteer: username=volunteer password=volunteer123');
 
-    // Demo student for quick testing
+    // Demo student for quick testing (Phase 2 auth)
     const studentHash = await bcrypt.hash('student123', 10);
     await Student.create({
-      fullName: 'Demo Student',
+      name: 'Demo Student',
       age: 14,
-      classGrade: '9',
+      className: '9',
       school: 'Government High School',
       location: 'North Zone',
-      preferredLanguage: 'English',
-      parentContact: '9876543210',
+      language: 'English',
+      guardianContact: '9876543210',
       username: 'student',
       password: studentHash,
+      role: 'student',
+      assessmentCompleted: false,
     });
     console.log('Seeded demo student: username=student password=student123');
 
