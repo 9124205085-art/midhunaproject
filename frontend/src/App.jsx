@@ -9,11 +9,14 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Assessment from './pages/student/Assessment';
 import Dashboard from './pages/student/Dashboard';
+import ModuleDetails from './pages/student/ModuleDetails';
 import Profile from './pages/student/Profile';
 import Recommendations from './pages/student/Recommendations';
+import SkillDetails from './pages/student/SkillDetails';
+import Skills from './pages/student/Skills';
 
 /**
- * Phase 1–5 active. Later phases use ComingSoon placeholders.
+ * Phase 1–6 active. Later phases use ComingSoon placeholders.
  */
 function App() {
   return (
@@ -56,6 +59,32 @@ function App() {
                 element={
                   <ProtectedRoute role="student">
                     <Recommendations />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Phase 6 — Basic Skill Learning */}
+              <Route
+                path="/student/skills"
+                element={
+                  <ProtectedRoute role="student">
+                    <Skills />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/skills/:skillId"
+                element={
+                  <ProtectedRoute role="student">
+                    <SkillDetails />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/skills/:skillId/module/:moduleId"
+                element={
+                  <ProtectedRoute role="student">
+                    <ModuleDetails />
                   </ProtectedRoute>
                 }
               />

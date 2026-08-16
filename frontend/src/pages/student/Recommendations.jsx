@@ -5,6 +5,7 @@ import Card from '../../components/Card';
 import ErrorMessage from '../../components/ErrorMessage';
 import Loading from '../../components/Loading';
 import { getRecommendations } from '../../services/studentService';
+import { skillNameToId } from '../../data/skills';
 
 /**
  * Phase 5 — Smart Skill Recommendations
@@ -122,6 +123,13 @@ export default function Recommendations() {
               {topRecommendation.explanation}
             </p>
           </div>
+          {skillNameToId[topRecommendation.skill] && (
+            <div className="mt-5">
+              <Link to={`/student/skills/${skillNameToId[topRecommendation.skill]}`}>
+                <Button>Start Learning</Button>
+              </Link>
+            </div>
+          )}
         </section>
       )}
 
@@ -145,6 +153,13 @@ export default function Recommendations() {
                 style={{ width: `${rec.percentage}%` }}
               />
             </div>
+            {skillNameToId[rec.skill] && (
+              <div className="mt-4">
+                <Link to={`/student/skills/${skillNameToId[rec.skill]}`}>
+                  <Button>Start Learning</Button>
+                </Link>
+              </div>
+            )}
           </Card>
         ))}
       </div>

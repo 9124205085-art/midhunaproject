@@ -74,9 +74,12 @@ export default function Dashboard() {
             </div>
           ))}
         </dl>
-        <div className="mt-5">
+        <div className="mt-5 flex flex-wrap gap-3">
           <Link to="/student/profile">
             <Button variant="outline">View Full Profile</Button>
+          </Link>
+          <Link to="/student/skills">
+            <Button>Explore Skills</Button>
           </Link>
         </div>
       </Card>
