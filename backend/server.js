@@ -40,7 +40,7 @@ app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/quiz', quizRoutes);
-app.use('/api/volunteer', volunteerRoutes);
+app.use('/api/volunteers', volunteerRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

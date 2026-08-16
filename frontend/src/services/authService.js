@@ -12,5 +12,5 @@ export const logoutStudent = () => {
 /** Used by AuthContext to restore session after refresh */
 export const getMe = () => api.get('/auth/me');
 
-/** Reserved for later phases */
-export const loginVolunteer = (data) => api.post('/auth/volunteer/login', data);
+/** Phase 9 — Volunteer login (prefer /volunteers/login) */
+export const loginVolunteer = (data) => api.post('/volunteers/login', data);

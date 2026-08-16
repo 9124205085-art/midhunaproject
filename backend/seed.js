@@ -376,9 +376,10 @@ const seed = async () => {
 
     const hashed = await bcrypt.hash('volunteer123', 10);
     await Volunteer.create({
-      fullName: 'Community Volunteer',
+      name: 'Priya',
       username: 'volunteer',
       password: hashed,
+      role: 'volunteer',
     });
     console.log('Seeded volunteer: username=volunteer password=volunteer123');
 

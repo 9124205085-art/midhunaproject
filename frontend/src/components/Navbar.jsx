@@ -28,6 +28,9 @@ export default function Navbar() {
               <NavLink to="/login" className={linkClass}>
                 Student Login
               </NavLink>
+              <NavLink to="/volunteer/login" className={linkClass}>
+                Volunteer
+              </NavLink>
               <Button onClick={() => navigate('/register')}>Get Started</Button>
             </>
           )}
@@ -56,6 +59,29 @@ export default function Navbar() {
               </NavLink>
               <span className="hidden text-sm text-stone-500 md:inline">{user?.name}</span>
               <Button variant="outline" onClick={handleLogout}>
+                Logout
+              </Button>
+            </>
+          )}
+          {isAuthenticated && role === 'volunteer' && (
+            <>
+              <NavLink to="/volunteer/dashboard" className={linkClass}>
+                Dashboard
+              </NavLink>
+              <NavLink to="/volunteer/students" className={linkClass}>
+                Students
+              </NavLink>
+              <NavLink to="/volunteer/classes" className={linkClass}>
+                Classes
+              </NavLink>
+              <span className="hidden text-sm text-stone-500 md:inline">{user?.name}</span>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  logout();
+                  navigate('/volunteer/login');
+                }}
+              >
                 Logout
               </Button>
             </>

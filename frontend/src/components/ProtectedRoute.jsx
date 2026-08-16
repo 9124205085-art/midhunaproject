@@ -3,8 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import Loading from './Loading';
 
 /**
- * Phase 2 — Protected Route
- * Unauthenticated users are redirected to /login
+ * Role-aware protected route.
+ * - Unauthenticated → /login or /volunteer/login
+ * - Wrong role → redirect to that role's dashboard
  */
 export default function ProtectedRoute({ children, role }) {
   const { isAuthenticated, role: userRole, loading } = useAuth();
@@ -12,12 +13,16 @@ export default function ProtectedRoute({ children, role }) {
   if (loading) return <Loading />;
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={role === 'volunteer' ? '/volunteer/login' : '/login'} replace />;
   }
 
-  // Structure ready for later role-based access (e.g. volunteer)
   if (role && userRole !== role) {
-    return <Navigate to="/login" replace />;
+    return (
+      <Navigate
+        to={userRole === 'volunteer' ? '/volunteer/dashboard' : '/student/dashboard'}
+        replace
+      />
+    );
   }
 
   return children;

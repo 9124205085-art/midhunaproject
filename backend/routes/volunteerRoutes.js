@@ -1,12 +1,21 @@
 const express = require('express');
-const { getDashboard, getStudents } = require('../controllers/volunteerController');
+const {
+  volunteerLogin,
+  getDashboardStats,
+  getStudents,
+  getStudentDetails,
+} = require('../controllers/volunteerController');
 const { protect } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 
 const router = express.Router();
 
-router.use(protect, requireRole('volunteer'));
-router.get('/dashboard', getDashboard);
-router.get('/students', getStudents);
+// Phase 9 — Volunteer login (public)
+router.post('/login', volunteerLogin);
+
+// Protected volunteer routes
+router.get('/dashboard', protect, requireRole('volunteer'), getDashboardStats);
+router.get('/students', protect, requireRole('volunteer'), getStudents);
+router.get('/students/:id', protect, requireRole('volunteer'), getStudentDetails);
 
 module.exports = router;

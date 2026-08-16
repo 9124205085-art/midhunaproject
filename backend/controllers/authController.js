@@ -195,7 +195,7 @@ const loginVolunteer = async (req, res) => {
     if (!volunteer) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid username or password.',
+        message: 'Invalid volunteer username or password.',
       });
     }
 
@@ -203,7 +203,7 @@ const loginVolunteer = async (req, res) => {
     if (!match) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid username or password.',
+        message: 'Invalid volunteer username or password.',
       });
     }
 
@@ -213,7 +213,7 @@ const loginVolunteer = async (req, res) => {
       role: 'volunteer',
       user: {
         id: volunteer._id,
-        name: volunteer.fullName,
+        name: volunteer.name || volunteer.fullName,
         username: volunteer.username,
         role: 'volunteer',
       },
@@ -248,7 +248,7 @@ const getMe = async (req, res) => {
           }
         : {
             id: req.user._id,
-            name: req.user.fullName,
+            name: req.user.name || req.user.fullName,
             username: req.user.username,
             role: 'volunteer',
           };

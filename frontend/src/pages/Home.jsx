@@ -49,9 +49,7 @@ export default function Home() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/register"><Button>GET STARTED</Button></Link>
             <Link to="/login"><Button variant="outline">STUDENT LOGIN</Button></Link>
-            <Button variant="secondary" type="button" title="Available in a later phase" disabled>
-              VOLUNTEER LOGIN (Coming Soon)
-            </Button>
+            <Link to="/volunteer/login"><Button variant="secondary">VOLUNTEER LOGIN</Button></Link>
           </div>
         </div>
       </section>
